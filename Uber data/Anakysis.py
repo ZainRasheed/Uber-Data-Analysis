@@ -78,7 +78,6 @@ Uber["Request date"] = temp_date_col
 #Request date column added
 
 
-
  #Segregated column for date
 X = Uber["Request timestamp"]
 X = pd.to_datetime(X)
@@ -87,11 +86,34 @@ Uber["Request timestamp"] = X
 #Result : Dataset with converted timestamp ss:mm:hh
 
 
+#early morning 12.00 am -- 5.59 am
+#morning 6.00 am -- 10.59 am
+#around noon 11.00 am -- 2.59pm
+#evening 3.00pm -- 7.50 pm
+#late evening 8.00 pm -- 11.59 am
 
-#categorizing time
-plt.scatter(Uber["Request time"], Uber["Request date"], s=10, c='b', marker="s", label='first')
-plt.legend(loc='upper left');
-plt.show()
+#12-6 early morning
+#7-11 morning
+#12-2 noon
+#3-8 evening
+#9-12 late evening
+
+#copying the timestamp to a var
+X = Uber["Request timestamp"].copy() 
+#copied
+
+#Convert the time to %H:%M:%S format and save only hour to the series
+Uber["Request timestamp discrete"] = pd.to_datetime(X, format='%H:%M:%S').dt.hour
+#a series with only the hours
+
+#Binning the hours in 5 parts 
+X = pd.cut(Uber["Request timestamp discrete"],bins=[0, 6, 11, 14, 16, 23],include_lowest=True,labels=["early morning", "morning", "noon", "evening","late evening"])
+#Converted the hours to 5 parts 
+
+#Replacing the discrete data with hours series.
+Uber["Request timestamp discrete"] = X
+Uber = Uber[["Pickup point","Status","Request date","Request timestamp discrete"]]
+#SLice the dataframe to the required data
 
 
 
@@ -102,12 +124,11 @@ plt.show()
 #Describe the dataset
 Uber.describe()
 """
-Result : Shows te count,unique values,etc of the dataframe
-       Pickup point          Status Request timestamp Request date
-count          6745            6745              6745         6745
-unique            2               3              5618            5
-top            City  Trip Completed    11/7/2016 9:40           15
-freq           3507            2831                 6         1381
+       Pickup point          Status Request timestamp discrete
+count          6745            6745                       6745
+unique            2               3                          5
+top            City  Trip Completed               late evening
+freq           3507            2831                       2840
 """
 
 #count of types
@@ -119,6 +140,7 @@ Name: Pickup point, dtype: int64
 """
 
 Uber["Status"].value_counts()
+Uber["Status"].describe()
 """
 Trip Completed       2831
 No Cars Available    2650
@@ -126,14 +148,15 @@ Cancelled            1264
 Name: Status, dtype: int64
 """
 
-Uber["Request timestamp"].value_counts()
+Uber["Request timestamp discrete"].value_counts()
+Uber["Request timestamp discrete"].describe()
 """
-11/7/2016 9:40         6
-11/7/2016 8:37         6
-                      ...
-15-07-2016 19:49:13    1
-14-07-2016 10:06:29    1
-Name: Request timestamp, Length: 5618, dtype: int64
+late evening     2840
+morning          1674
+early morning    1421
+noon              480
+evening           330
+Name: Request timestamp discrete, dtype: int64
 """
 #sns.heatmap(Uber["Request timestamp"])
 
@@ -141,5 +164,6 @@ Name: Request timestamp, Length: 5618, dtype: int64
 #Histogram to see the distributions
 Uber["Pickup point"].apply(pd.value_counts).plot.hist()
 Uber["Status"].apply(pd.value_counts).plot.hist(bins=2)
+X.apply(pd.value_counts).plot.hist()
 #Uber["Request timestamp"].plot.hist(bins=10)
-#Uber["Request timestamp"].apply(pd.value_counts).plot(style = "k.")
+#Uber["Request timestamp discrete"].apply(pd.value_counts).plot(style = "k.")
