@@ -163,7 +163,10 @@ Name: Request timestamp discrete, dtype: int64
 #Uber["Pickup point"].plot.hist(bins=5) // this will not work if the seried or dataframe is not numeric data
 #Histogram to see the distributions
 Uber["Pickup point"].apply(pd.value_counts).plot.hist()
-Uber["Status"].apply(pd.value_counts).plot.hist(bins=2)
+Uber["Status"].apply(pd.value_counts).plot.hist()
+Uber["Request date"].apply(pd.value_counts).plot.hist()
+Uber["Request timestamp discrete"].apply(pd.value_counts).plot.hist()
+
 X.apply(pd.value_counts).plot.hist()
 #Uber["Request timestamp"].plot.hist(bins=10)
 #Uber["Request timestamp discrete"].apply(pd.value_counts).plot(style = "k.")
